@@ -68,7 +68,10 @@ var Bounds = require('../geometry/Bounds');
             bodyBtoAX,
             bodyBtoAY,
             positionImpulse,
-            impulseCoefficient = timeScale * Resolver._positionDampen;
+            impulseCoefficient = timeScale * Resolver._positionDampen,
+            bodiesMass,
+            bodyAMassFactor,
+            bodyBMassFactor;
 
         for (i = 0; i < bodies.length; i++) {
             var body = bodies[i];
@@ -107,16 +110,20 @@ var Bounds = require('../geometry/Bounds');
             if (bodyA.isStatic || bodyB.isStatic)
                 positionImpulse *= 2;
             
+            bodiesMass = bodyA.mass + bodyB.mass;
+
             if (!(bodyA.isStatic || bodyA.isSleeping)) {
                 contactShare = positionImpulse / bodyA.totalContacts;
-                bodyA.positionImpulse.x += normalX * contactShare;
-                bodyA.positionImpulse.y += normalY * contactShare;
+                bodyAMassFactor = 1 - (bodyA.mass / bodiesMass);
+                bodyA.positionImpulse.x += normalX * contactShare * bodyAMassFactor;
+                bodyA.positionImpulse.y += normalY * contactShare * bodyAMassFactor;
             }
 
             if (!(bodyB.isStatic || bodyB.isSleeping)) {
                 contactShare = positionImpulse / bodyB.totalContacts;
-                bodyB.positionImpulse.x -= normalX * contactShare;
-                bodyB.positionImpulse.y -= normalY * contactShare;
+                bodyBMassFactor = 1 - (bodyB.mass / bodiesMass);
+                bodyB.positionImpulse.x -= normalX * contactShare * bodyBMassFactor;
+                bodyB.positionImpulse.y -= normalY * contactShare * bodyBMassFactor;
             }
         }
     };
